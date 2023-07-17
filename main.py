@@ -1,17 +1,15 @@
 import argparse
 import csv
 from itertools import combinations
-from numpy import linspace
 import math
 from tqdm import tqdm
 
 def find_required_class_change(interval, p=1/20):
     d_x = max(interval)-min(interval)
     # c_req = INT(p*d_x)
-    # p determined in advance (how?), e.g. 1/20
+    # p determined in advance, e.g. 1/20
     # d_x e.g. 20,40,60,...
     pocc = int(p*d_x)
-    # print("pocc",pocc)
     return pocc
 
 def find_actual_class_change(interval, class_breaks):
@@ -29,7 +27,7 @@ def find_actual_class_change(interval, class_breaks):
     return end-start # return class change
 
 def weight(d_c, num_classes):
-    # weight non-significant changes heavily
+    # weight non-significant changes heavily to avoid change exaggeration
     return num_classes-1 if d_c==0 else d_c
 
 def POCC(intervals, class_breaks, p):
@@ -53,7 +51,7 @@ def sweep_line(data, num_classes, p_value=1/20, nodata=-9999):
     
     possible_sweep_line_positions = filter(lambda x: x != nodata, possible_sweep_line_positions) # filter missing data
     possible_sweep_line_positions = list(set(possible_sweep_line_positions)) # only unique values
-    print("possible sweep line positions", len(possible_sweep_line_positions))
+    print("number of possible sweep line positions:", len(possible_sweep_line_positions))
 
     intervals.sort(key=lambda x: x[0])
 
@@ -82,15 +80,6 @@ def load_csv(filename, startcolumn):
                 value = float(value)
                 data[header[col_num+startcolumn]].append(value)
     return data
-
-def find_smallest_change(values):
-    s = sorted(values)
-    min_d = float("inf")
-    for i,x in enumerate(s[:-1]):
-        d = abs(s[i]-s[i+1])
-        if d < min_d:
-            min_d = d
-    return min_d
 
 def equidistanct_classifier(data, num_classes, nodata=-9999):
     values = sum(list(data.values()),[])
