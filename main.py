@@ -28,14 +28,14 @@ def find_actual_class_change(interval, class_breaks):
 
     return end-start # return class change
 
-def weight(interval, d_c):
-    # to do
-    return 1
+def weight(d_c, num_classes):
+    # weight non-significant changes heavily
+    return num_classes-1 if d_c==0 else d_c
 
 def POCC(intervals, class_breaks, p):
     c_req = find_required_class_change
     c_ach = find_actual_class_change
-    return 1-(sum([weight(i)*abs(c_req(i,p)-c_ach(i,class_breaks)) for i in intervals])/sum([weight(i)*c_req(i,p) for i in intervals]))
+    return 1-(sum([weight(c_req(i,p),len(class_breaks)+1)*abs(c_req(i,p)-c_ach(i,class_breaks)) for i in intervals])/sum([weight(c_req(i,p),len(class_breaks)+1)*c_req(i,p) for i in intervals]))
 
 def sweep_line(data, num_classes, p_value=1/20, nodata=-9999):
     intervals = []
@@ -94,7 +94,7 @@ def find_smallest_change(values):
 
 def equidistanct_classifier(data, num_classes, nodata=-9999):
     values = sum(list(data.values()),[])
-    values = filter(lambda x: x != nodata, values)
+    values = list(filter(lambda x: x != nodata, values))
     interval_step = (max(values)-min(values))/num_classes
     class_breaks = [min(values)+i*interval_step for i in range(0,num_classes+1)]
     return class_breaks
