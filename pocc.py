@@ -115,6 +115,9 @@ def equidistanct_classifier(data, num_classes, nodata=-9999):
 def classify(values, classifier, **kwargs):
     return classifier(values, **kwargs)
 
+def visualise_geojon(data, geometries, breaks):
+    pass
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
                     prog='pocc',
@@ -158,4 +161,4 @@ if __name__ == "__main__":
     print("pocc-based:",class_breaks_pocc)
 
     if os.path.splitext(args.filename)[-1] == "geojson":
-        pass # to do: visualise 
+        visualise_geojon(data, geometries, class_breaks_pocc["breaks"])

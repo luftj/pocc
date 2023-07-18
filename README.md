@@ -35,7 +35,7 @@ with
 
 For example, if you want to classify the sample data into 4 classes, run:
 
-`python main.py data/sampledata_cars_2005-2020.csv 4 --startcolumn 4` 
+`python pocc.py data/sampledata_cars_2005-2020.csv 4 --startcolumn 4` 
 
 or
 
