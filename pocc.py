@@ -117,7 +117,7 @@ def classify(values, classifier, **kwargs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                    prog='main',
+                    prog='pocc',
                     description='Calculate change-preserving class breaks for a multi-temporal dataset',
                     epilog='Made by the g2lab of Hafencity University Hamburg. Contact: jonas.luft@hcu-hamburg.de')
 
