@@ -49,4 +49,3 @@ or
 
 * show POCC value for equidistant classifier
 * include min+max intervall boundaries for class breaks (for easier colour ramps)
-* visualise the output of geojson as PNGs

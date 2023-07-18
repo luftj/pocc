@@ -5,6 +5,8 @@ import json
 from itertools import combinations
 import math
 from tqdm import tqdm
+import matplotlib.pyplot as plt 
+from descartes import PolygonPatch
 
 def find_required_class_change(interval, p=1/20):
     d_x = max(interval)-min(interval)
@@ -84,7 +86,7 @@ def load_csv(filename, startcolumn: int):
     return data
 
 def load_geojson(filename, keys:list[str]=None, values_key:str=None, keys_key=None, nodata=-9999):
-    if not keys and (not values_keys):
+    if not keys and (not values_key):
         raise ValueError("for geojson must provide either keys or vkey")
     
     geometries = []
@@ -115,8 +117,38 @@ def equidistanct_classifier(data, num_classes, nodata=-9999):
 def classify(values, classifier, **kwargs):
     return classifier(values, **kwargs)
 
+def get_colour(class_index, num_classes, colour_ramp="Blues"):
+    cmap =  plt.get_cmap(colour_ramp)
+    return cmap(class_index/num_classes)
+
 def visualise_geojon(data, geometries, breaks):
-    pass
+    for epoch in data:
+        fig = plt.figure() 
+        ax = fig.gca() 
+        class_labels = []
+        for feat_idx, geom in enumerate(geometries):
+            class_index = 0
+            value = data[epoch][feat_idx]
+            for c_i,b in enumerate(breaks):
+                if value >= b:
+                    class_index = c_i+1
+            class_label = f"> {breaks[-1]}" if class_index >= len(breaks) else f"< {breaks[class_index]}"
+            
+            colour = get_colour(class_index, num_classes=len(breaks)+1)
+            if geom["type"] in ["Polygon","MultiPolygon"]:
+                ax.add_patch(PolygonPatch(geom, fc=colour, ec="#ccc", label=class_label if class_label not in class_labels else ""))
+                class_labels.append(class_label)
+            else:
+                print(f"cant draw geometry type {geom['type']}, skipping")
+                continue
+        ax.axis('scaled')
+        # TO DO: these class labels are super hacky, do it cleaner: create hadles, labels separately and once, then feed to legend
+        handles, labels = plt.gca().get_legend_handles_labels()
+        handles, labels = zip(*sorted(zip(handles,labels),key=lambda x: float(x[1][2:])+(1 if x[0]==">" else 0)))
+        plt.legend(handles, labels)
+        plt.axis("off")
+        plt.savefig(f"{epoch}.png")
+        plt.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -160,5 +192,5 @@ if __name__ == "__main__":
     print("equidistant:",class_breaks_equidistant)
     print("pocc-based:",class_breaks_pocc)
 
-    if os.path.splitext(args.filename)[-1] == "geojson":
+    if os.path.splitext(args.filename)[-1] == ".geojson":
         visualise_geojon(data, geometries, class_breaks_pocc["breaks"])
