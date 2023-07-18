@@ -21,7 +21,7 @@ Set up a python environment and run `pip install -r requirements.txt`.
 
 ## Usage
 
-`python main.py [-h] [-p P] [--nodata NODATA] [--startcolumn STARTCOLUMN] [--keys KEYS [KEYS ...]] [--vkey VKEY] filename classes`
+`python pocc.py [-h] [-p P] [--nodata NODATA] [--startcolumn STARTCOLUMN] [--keys KEYS [KEYS ...]] [--vkey VKEY] filename classes`
 
 with
 * h: show a help message
@@ -39,11 +39,11 @@ For example, if you want to classify the sample data into 4 classes, run:
 
 or
 
-`python main.py data/sampledata_cars_2005-2020.geojson 4 --vkey data` 
+`python pocc.py data/sampledata_cars_2005-2020.geojson 4 --vkey data` 
 
 or
 
-`python main.py data/sampledata_cars_2005-2020_b.geojson 4 --keys 2005 2010 2015 2020` 
+`python pocc.py data/sampledata_cars_2005-2020_b.geojson 4 --keys 2005 2010 2015 2020` 
 
 ## To do / limitations:
 
