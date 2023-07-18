@@ -1,5 +1,7 @@
+import os
 import argparse
 import csv
+import json
 from itertools import combinations
 import math
 from tqdm import tqdm
@@ -68,7 +70,7 @@ def sweep_line(data, num_classes, p_value=1/20, nodata=-9999):
             }
     return best_classification
 
-def load_csv(filename, startcolumn):
+def load_csv(filename, startcolumn: int):
     data = {}
     with open(filename, encoding="utf8") as fr:
         reader = csv.reader(fr, delimiter=";") # to do: autodetect delimiter
@@ -80,6 +82,28 @@ def load_csv(filename, startcolumn):
                 value = float(value)
                 data[header[col_num+startcolumn]].append(value)
     return data
+
+def load_geojson(filename, keys:list[str]=None, values_key:str=None, keys_key=None, nodata=-9999):
+    if not keys and (not values_keys):
+        raise ValueError("for geojson must provide either keys or vkey")
+    
+    geometries = []
+    with open(filename) as fr:
+        json_data = json.load(fr)
+        if keys:
+            data = {k:[] for k in keys}
+        elif keys_key:
+            data = {k:[] for k in json_data["features"][0]["properties"][keys_key]}
+        else:
+            data = {i:[] for i,_ in enumerate(json_data["features"][0]["properties"][values_key])}
+        for feature in json_data["features"]:
+            for idx,prop in enumerate(data):
+                if values_key:
+                    data[prop].append(float(feature["properties"][values_key][idx]))
+                else:
+                    data[prop].append(float(feature["properties"].get(prop, nodata)))
+            geometries.append(feature["geometry"])
+    return data, geometries
 
 def equidistanct_classifier(data, num_classes, nodata=-9999):
     values = sum(list(data.values()),[])
@@ -93,19 +117,30 @@ def classify(values, classifier, **kwargs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                    prog='POCC-based multi-temporal data classification',
+                    prog='main',
                     description='Calculate change-preserving class breaks for a multi-temporal dataset',
                     epilog='Made by the g2lab of Hafencity University Hamburg. Contact: jonas.luft@hcu-hamburg.de')
 
     parser.add_argument('filename', help="The csv input file")
-    parser.add_argument('startcolumn', type=int, help="the column in which the time series data begins. 0-indexed")
     parser.add_argument('classes', type=int, help="number of classes")
     parser.add_argument('-p', type=float, help="desired class difference for 'significant' change. Default: 1/20", default=1/20)
     parser.add_argument('--nodata', help="value that indicates missing data. Default is -9999", default=-9999)
+    parser.add_argument('--startcolumn', type=int, help="csv only. the column in which the time series data begins. 0-indexed")
+    parser.add_argument('--keys', nargs='+', type=str, help="geojson only. Name of the properties elements that contain data values.")
+    parser.add_argument('--vkey', type=str, help="geojson only. Name of the properties element that contains a list of data.")
+    # parser.add_argument('--kkey', type=str, help="geojson only. Name of the properties element that contains a list of names for the data columns.")
     args = parser.parse_args()
 
     # load data file
-    data = load_csv(args.filename, args.startcolumn)
+    if os.path.splitext(args.filename)[-1] == ".csv":
+        if args.startcolumn==None:
+            raise ValueError("startcolumn needs to be provided for csv files!")
+        data = load_csv(args.filename, args.startcolumn)
+    elif os.path.splitext(args.filename)[-1] == ".geojson":
+        print(args.keys)
+        data, geometries = load_geojson(args.filename, keys=args.keys, values_key=args.vkey, nodata=args.nodata)
+    else:
+        raise NotImplementedError(f"can't read {os.path.splitext(args.filename)[-1]} file. Please supply csv or geojson")
 
     # show some general stats about values
     print(f"{len(list(data.values())[0])} rows")
@@ -121,3 +156,6 @@ if __name__ == "__main__":
 
     print("equidistant:",class_breaks_equidistant)
     print("pocc-based:",class_breaks_pocc)
+
+    if os.path.splitext(args.filename)[-1] == "geojson":
+        pass # to do: visualise 

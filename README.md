@@ -21,19 +21,32 @@ Set up a python environment and run `pip install -r requirements.txt`.
 
 ## Usage
 
-`python main.py [-h] [-p P] [--nodata NODATA] filename startcolumn classes`
+`python main.py [-h] [-p P] [--nodata NODATA] [--startcolumn STARTCOLUMN] [--keys KEYS [KEYS ...]] [--vkey VKEY] filename classes`
 
 with
+* h: show a help message
 * filename: path to a csv file with the data
-* startcolumn: the column (zero-indexed) in which the timeseries data starts. All columns to the right will be treated as data.
 * classes: the number of target classes.
 * P: the factor to mark a change significant (TO DO: needs better explanation)
 * NODATA: the value of missing data fields. These will be ignored.
+* startcolumn: csv only. the column (zero-indexed) in which the timeseries data starts. All columns to the right will be treated as data.
+* keys: geojson only. Name of the properties elements that contain data values. E.g. `--keys 2005 2010 2015`
+* vkey: geojson only. Name of the properties element that contains a list of data. E.g. `--vkey data` when your geojson contains properties like "data": ["533.9","494.4","516.5","531.2"]
 
 For example, if you want to classify the sample data into 4 classes, run:
 
-`python main.py data/sampledata_cars_2005-2020.csv 2 4`
+`python main.py data/sampledata_cars_2005-2020.csv 4 --startcolumn 4` 
+
+or
+
+`python main.py data/sampledata_cars_2005-2020.geojson 4 --vkey data` 
+
+or
+
+`python main.py data/sampledata_cars_2005-2020_b.geojson 4 --keys 2005 2010 2015 2020` 
 
 ## To do / limitations:
 
-* nice to have: load geojson/shaeefile instead of csv and visualise the output as PNGs
+* show POCC value for equidistant classifier
+* include min+max intervall boundaries for class breaks (for easier colour ramps)
+* visualise the output of geojson as PNGs
