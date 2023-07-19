@@ -70,7 +70,7 @@ def sweep_line(data, num_classes, p_value=1/20, nodata=-9999):
                 "breaks": sorted(positions),
                 "POCC": pocc
             }
-    return best_classification
+    return best_classification["breaks"]
 
 def load_csv(filename, startcolumn: int):
     data = {}
@@ -111,7 +111,7 @@ def equidistanct_classifier(data, num_classes, nodata=-9999):
     values = sum(list(data.values()),[])
     values = list(filter(lambda x: x != nodata, values))
     interval_step = (max(values)-min(values))/num_classes
-    class_breaks = [min(values)+i*interval_step for i in range(0,num_classes+1)]
+    class_breaks = [min(values)+i*interval_step for i in range(1,num_classes)]
     return class_breaks
 
 def classify(values, classifier, **kwargs):
@@ -149,6 +149,19 @@ def visualise_geojon(data, geometries, breaks):
         plt.axis("off")
         plt.savefig(f"{epoch}.png")
         plt.close()
+
+def test_pocc(data, class_breaks, p_value, nodata=-9999):
+    intervals = []
+    # get all value changes of each time series (intervals) as tuples
+    for i in range(len(list(data.values())[0])):
+        row = [c[i] for c in data.values()]
+        for i in range(0,len(row)-1):
+            if row[i] == nodata or row[i+1] == nodata:
+                continue  # filter missing data
+            interval = sorted((row[i],row[i+1]))
+            intervals.append(interval)
+    pocc = POCC(intervals, class_breaks, p_value)
+    return pocc
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -189,8 +202,8 @@ if __name__ == "__main__":
     class_breaks_equidistant = classify(data, equidistanct_classifier, num_classes=args.classes, nodata=args.nodata)
     class_breaks_pocc = classify(data, sweep_line, num_classes=args.classes, p_value=args.p, nodata=args.nodata)
 
-    print("equidistant:",class_breaks_equidistant)
-    print("pocc-based:",class_breaks_pocc)
+    print("equidistant:",[min(all_values)]+class_breaks_equidistant+[max(all_values)], f"POCC: {test_pocc(data, class_breaks_equidistant, args.p):.2f}")
+    print("pocc-based:",[min(all_values)]+class_breaks_pocc+[max(all_values)], f"POCC: {test_pocc(data, class_breaks_pocc, args.p):.2f}")
 
     if os.path.splitext(args.filename)[-1] == ".geojson":
-        visualise_geojon(data, geometries, class_breaks_pocc["breaks"])
+        visualise_geojon(data, geometries, class_breaks_pocc)

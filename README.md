@@ -35,7 +35,7 @@ with
 
 For example, if you want to classify the sample data into 4 classes, run:
 
-`python pocc.py data/sampledata_cars_2005-2020.csv 4 --startcolumn 4` 
+`python pocc.py data/sampledata_cars_2005-2020.csv 4 --startcolumn 2` 
 
 or
 
@@ -44,8 +44,3 @@ or
 or
 
 `python pocc.py data/sampledata_cars_2005-2020_b.geojson 4 --keys 2005 2010 2015 2020` 
-
-## To do / limitations:
-
-* show POCC value for equidistant classifier
-* include min+max intervall boundaries for class breaks (for easier colour ramps)
