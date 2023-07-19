@@ -44,3 +44,5 @@ or
 or
 
 `python pocc.py data/sampledata_cars_2005-2020_b.geojson 4 --keys 2005 2010 2015 2020` 
+
+When providing a geojson as input, png files with visualisation of the different epochs will be created in $PWD.
